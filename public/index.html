@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Chat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chat-container {
+      width: 90%;
+      max-width: 800px;
+      height: 80vh;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #f8f9fa;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      padding: 12px 16px;
+      border-radius: 18px;
+      max-width: 70%;
+      word-wrap: break-word;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .message.own {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .message.other {
+      background: white;
+      color: #333;
+      border: 1px solid #e9ecef;
+    }
+
+    .message-info {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .message-text {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .chat-input-container {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .username-input {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .username-input input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 25px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .username-input input:focus {
+      border-color: #667eea;
+    }
+
+    .username-input button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+
+    .username-input button:hover {
+      transform: translateY(-2px);
+    }
+
+    .message-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .message-input input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 25px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .message-input input:focus {
+      border-color: #667eea;
+    }
+
+    .message-input button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+
+    .message-input button:hover {
+      transform: translateY(-2px);
+    }
+
+    .message-input button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .status.connected {
+      color: #28a745;
+    }
+
+    .status.disconnected {
+      color: #dc3545;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .typing-indicator {
+      font-style: italic;
+      color: #666;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      💬 Live Chat
+    </div>
+
+    <div class="status" id="status">Подключение...</div>
+
+    <div class="chat-messages" id="messages"></div>
+
+    <div class="chat-input-container">
+      <div class="username-input" id="usernameInput">
+        <input type="text" id="username" placeholder="Введите ваше имя" maxlength="20">
+        <button onclick="joinChat()">Присоединиться</button>
+      </div>
+
+      <div class="message-input" id="messageInput" style="display: none;">
+        <input type="text" id="message" placeholder="Введите сообщение..." maxlength="500">
+        <button onclick="sendMessage()" id="sendBtn">Отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const messagesContainer = document.getElementById('messages');
+    const statusElement = document.getElementById('status');
+    const usernameInput = document.getElementById('usernameInput');
+    const messageInput = document.getElementById('messageInput');
+    const usernameField = document.getElementById('username');
+    const messageField = document.getElementById('message');
+    const sendBtn = document.getElementById('sendBtn');
+
+    let isConnected = false;
+    let currentUsername = '';
+
+    // Обработка подключения
+    socket.on('connect', () => {
+      isConnected = true;
+      statusElement.textContent = 'Подключено';
+      statusElement.className = 'status connected';
+    });
+
+    socket.on('disconnect', () => {
+      isConnected = false;
+      statusElement.textContent = 'Отключено';
+      statusElement.className = 'status disconnected';
+    });
+
+    // Обработка ошибок
+    socket.on('error', (data) => {
+      alert('Ошибка: ' + data.message);
+    });
+
+    // Присоединение к чату
+    function joinChat() {
+      const username = usernameField.value.trim();
+      if (!username) {
+        alert('Пожалуйста, введите ваше имя');
+        return;
+      }
+
+      currentUsername = username;
+      socket.emit('join', { username });
+
+      usernameInput.style.display = 'none';
+      messageInput.style.display = 'flex';
+
+      // Загружаем историю сообщений
+      socket.emit('getHistory');
+    }
+
+    // Отправка сообщения
+    function sendMessage() {
+      const message = messageField.value.trim();
+      if (!message || !isConnected) return;
+
+      socket.emit('message', { text: message });
+      messageField.value = '';
+    }
+
+    // Обработка нажатия Enter
+    messageField.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    usernameField.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        joinChat();
+      }
+    });
+
+    // Получение сообщения
+    socket.on('message', (data) => {
+      addMessage(data, data.username === currentUsername);
+    });
+
+    // Получение истории сообщений
+    socket.on('history', (messages) => {
+      messages.forEach(message => {
+        addMessage(message, message.username === currentUsername);
+      });
+    });
+
+    // Пользователь присоединился
+    socket.on('userJoined', (data) => {
+      addSystemMessage(`${data.username} присоединился к чату`);
+    });
+
+    // Добавление сообщения в чат
+    function addMessage(data, isOwn) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+
+      const time = new Date(data.createdAt).toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      messageDiv.innerHTML = `
+                <div class="message-info">${data.username} • ${time}</div>
+                <div class="message-text">${escapeHtml(data.text)}</div>
+            `;
+
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Добавление системного сообщения
+    function addSystemMessage(text) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'typing-indicator';
+      messageDiv.textContent = text;
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Экранирование HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+
+</html>
