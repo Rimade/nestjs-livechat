@@ -3,160 +3,309 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   <title>Live Chat</title>
+  <!-- Подключаем Google Fonts и Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
+    :root {
+      /* Современная цветовая палитра */
+      --main-gradient: linear-gradient(135deg, #4fd1c5 0%, #38a169 100%);
+      --main-bg: #f6f8fa;
+      --container-bg: #fff;
+      --own-msg-bg: linear-gradient(135deg, #38a169 0%, #4fd1c5 100%);
+      --other-msg-bg: #e2e8f0;
+      --border-radius: 22px;
+      --input-radius: 28px;
+      --shadow: 0 8px 32px rgba(56, 161, 105, 0.13);
+      --header-height: 68px;
+      --transition: 0.18s cubic-bezier(.4, 0, .2, 1);
+      --accent: #38a169;
+      --danger: #e53e3e;
+      --success: #38a169;
+      --icon-size: 24px;
+      --own-msg-text: #fff;
+      --other-msg-text: #222;
+      --system-msg-bg: #f0fff4;
+      --system-msg-text: #276749;
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
+    html,
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      height: 100vh;
+      height: 100%;
+      width: 100%;
+      background: var(--main-gradient);
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      background: var(--main-gradient);
     }
 
     .chat-container {
-      width: 90%;
-      max-width: 800px;
-      height: 80vh;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 430px;
+      height: 92vh;
+      max-height: 740px;
+      background: var(--container-bg);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      margin: 18px;
+      position: relative;
+      border: 1.5px solid #e2e8f0;
+      backdrop-filter: blur(2px);
     }
 
     .chat-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: var(--main-gradient);
       color: white;
-      padding: 20px;
-      text-align: center;
+      padding: 0 28px;
+      height: var(--header-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       font-size: 24px;
-      font-weight: bold;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 12px rgba(72, 187, 120, 0.10);
+      z-index: 2;
+      position: relative;
+    }
+
+    .chat-header .header-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 23px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .chat-header .material-icons {
+      font-size: 30px;
+      vertical-align: middle;
+      opacity: 0.92;
+    }
+
+    .chat-header .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status {
+      text-align: center;
+      padding: 10px 0 8px 0;
+      font-size: 14px;
+      color: #888;
+      background: #e6fffa;
+      border-bottom: 1px solid #c6f6d5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 32px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+    }
+
+    .status.connected {
+      color: var(--success);
+    }
+
+    .status.disconnected {
+      color: var(--danger);
+    }
+
+    .status .material-icons {
+      font-size: 18px;
+      vertical-align: middle;
     }
 
     .chat-messages {
       flex: 1;
-      padding: 20px;
+      padding: 20px 14px 10px 14px;
       overflow-y: auto;
-      background: #f8f9fa;
+      background: var(--main-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+      position: relative;
     }
 
     .message {
-      margin-bottom: 15px;
-      padding: 12px 16px;
-      border-radius: 18px;
-      max-width: 70%;
-      word-wrap: break-word;
-      animation: slideIn 0.3s ease-out;
+      margin-bottom: 0;
+      padding: 13px 18px 13px 18px;
+      border-radius: var(--border-radius);
+      max-width: 78%;
+      word-break: break-word;
+      animation: slideIn 0.32s var(--transition);
+      box-shadow: 0 2px 12px rgba(102, 126, 234, 0.07);
+      display: flex;
+      flex-direction: column;
+      font-size: 16px;
+      position: relative;
+      transition: box-shadow 0.18s;
     }
 
     .message.own {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: var(--own-msg-bg);
+      color: #fff;
       margin-left: auto;
-      text-align: right;
+      align-items: flex-end;
+      border-bottom-right-radius: 8px;
+      border-top-right-radius: 8px;
+      border-bottom-left-radius: 22px;
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.13);
     }
 
     .message.other {
-      background: white;
-      color: #333;
-      border: 1px solid #e9ecef;
+      background: var(--other-msg-bg);
+      color: #222;
+      border: 1.5px solid #e3e6f0;
+      margin-right: auto;
+      align-items: flex-start;
+      border-bottom-left-radius: 8px;
+      border-top-left-radius: 8px;
+      border-bottom-right-radius: 22px;
     }
 
     .message-info {
       font-size: 12px;
       opacity: 0.7;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .message-info .material-icons {
+      font-size: 16px;
+      opacity: 0.7;
+      vertical-align: middle;
     }
 
     .message-text {
-      font-size: 14px;
-      line-height: 1.4;
+      font-size: 16px;
+      line-height: 1.6;
+      word-break: break-word;
+      font-weight: 500;
+
+      letter-spacing: 0.01em;
     }
 
     .chat-input-container {
-      padding: 20px;
-      background: white;
-      border-top: 1px solid #e9ecef;
-    }
-
-    .username-input {
+      padding: 16px 14px 14px 14px;
+      background: var(--container-bg);
+      border-top: 1.5px solid #e3e6f0;
       display: flex;
+      flex-direction: column;
       gap: 10px;
-      margin-bottom: 15px;
+      box-shadow: 0 -2px 12px rgba(102, 126, 234, 0.04);
     }
 
-    .username-input input {
-      flex: 1;
-      padding: 12px 16px;
-      border: 2px solid #e9ecef;
-      border-radius: 25px;
-      outline: none;
-      font-size: 14px;
-      transition: border-color 0.3s;
-    }
-
-    .username-input input:focus {
-      border-color: #667eea;
-    }
-
-    .username-input button {
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 25px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: bold;
-      transition: transform 0.2s;
-    }
-
-    .username-input button:hover {
-      transform: translateY(-2px);
-    }
-
+    .username-input,
     .message-input {
       display: flex;
       gap: 10px;
+      width: 100%;
+      align-items: center;
     }
 
-    .message-input input {
+    .username-input input,
+    .message-input textarea {
       flex: 1;
-      padding: 12px 16px;
-      border: 2px solid #e9ecef;
-      border-radius: 25px;
+      padding: 15px 18px 15px 44px;
+      border: 2px solid #e3e6f0;
+      border-radius: var(--input-radius);
       outline: none;
-      font-size: 14px;
-      transition: border-color 0.3s;
+      font-size: 16px;
+      background: #f7f8fa;
+      transition: border-color var(--transition), background var(--transition);
+      color: #222;
+      font-family: inherit;
+      box-shadow: 0 1px 4px rgba(102, 126, 234, 0.04);
+      position: relative;
+      resize: none;
+      min-height: 44px;
+      max-height: 160px;
+      line-height: 1.5;
+      overflow-y: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
 
-    .message-input input:focus {
-      border-color: #667eea;
+    .username-input input::-webkit-scrollbar,
+    .message-input textarea::-webkit-scrollbar {
+      display: none;
     }
 
+    .username-input input:focus,
+    .message-input textarea:focus {
+      border-color: var(--accent);
+      background: #fff;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #b0b3c6;
+      font-size: 22px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .input-wrapper {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .username-input button,
     .message-input button {
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 0 22px;
+      background: var(--main-gradient);
       color: white;
       border: none;
-      border-radius: 25px;
+      border-radius: var(--input-radius);
       cursor: pointer;
-      font-size: 14px;
-      font-weight: bold;
-      transition: transform 0.2s;
+      font-size: 17px;
+      font-weight: 600;
+      transition: transform var(--transition), background var(--transition), box-shadow 0.18s;
+      min-width: 48px;
+      min-height: 48px;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.10);
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
+    .username-input button:hover,
     .message-input button:hover {
-      transform: translateY(-2px);
+      transform: translateY(-2px) scale(1.04);
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.18);
     }
 
     .message-input button:disabled {
@@ -165,25 +314,25 @@
       transform: none;
     }
 
-    .status {
+    .typing-indicator {
+      font-style: italic;
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 8px;
       text-align: center;
-      padding: 10px;
-      font-size: 12px;
-      color: #666;
-    }
-
-    .status.connected {
-      color: #28a745;
-    }
-
-    .status.disconnected {
-      color: #dc3545;
+      background: none;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      letter-spacing: 0.01em;
     }
 
     @keyframes slideIn {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(24px);
       }
 
       to {
@@ -192,11 +341,60 @@
       }
     }
 
-    .typing-indicator {
-      font-style: italic;
-      color: #666;
-      font-size: 12px;
-      margin-bottom: 10px;
+    /* Мобильная адаптация */
+    @media (max-width: 600px) {
+      .chat-container {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+      }
+
+      .chat-header {
+        font-size: 19px;
+        height: 56px;
+        padding: 0 10px;
+      }
+
+      .chat-messages {
+        padding: 10px 4px 4px 4px;
+        font-size: 15px;
+      }
+
+      .chat-input-container {
+        padding: 10px 4px 8px 4px;
+      }
+
+      .username-input button,
+      .message-input button {
+        min-width: 44px;
+        font-size: 15px;
+        padding: 0 10px;
+      }
+
+      .username-input input,
+      .message-input textarea {
+        font-size: 15px;
+        padding: 13px 10px 13px 40px;
+      }
+
+      .message {
+        font-size: 15px;
+        padding: 10px 10px;
+        max-width: 95%;
+      }
+    }
+
+    /* Скрыть стрелки прокрутки на мобильных */
+    .chat-messages {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      display: none;
     }
   </style>
 </head>
@@ -204,22 +402,46 @@
 <body>
   <div class="chat-container">
     <div class="chat-header">
-      💬 Live Chat
+      <span class="header-title">
+        <span class="material-icons" style="font-size:28px;">forum</span>
+        Live Chat
+      </span>
+      <span class="header-actions">
+        <span class="material-icons" title="Обновить" style="cursor:pointer;"
+          onclick="window.location.reload()">refresh</span>
+        <span class="material-icons" title="Светлая/тёмная тема" style="cursor:pointer;"
+          id="themeToggle">dark_mode</span>
+      </span>
     </div>
 
-    <div class="status" id="status">Подключение...</div>
+    <div class="status" id="status">
+      <span class="material-icons" id="statusIcon">sync</span>
+      Подключение...
+    </div>
 
     <div class="chat-messages" id="messages"></div>
 
     <div class="chat-input-container">
       <div class="username-input" id="usernameInput">
-        <input type="text" id="username" placeholder="Введите ваше имя" maxlength="20">
-        <button onclick="joinChat()">Присоединиться</button>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon">person</span>
+          <input type="text" id="username" placeholder="Введите ваше имя" maxlength="20" autocomplete="username">
+        </div>
+        <button onclick="joinChat()">
+          <span class="material-icons">login</span>
+          Войти
+        </button>
       </div>
 
       <div class="message-input" id="messageInput" style="display: none;">
-        <input type="text" id="message" placeholder="Введите сообщение..." maxlength="500">
-        <button onclick="sendMessage()" id="sendBtn">Отправить</button>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon">edit</span>
+          <textarea id="message" placeholder="Введите сообщение..." maxlength="500" autocomplete="off"
+            rows="2"></textarea>
+        </div>
+        <button onclick="sendMessage()" id="sendBtn">
+          <span class="material-icons">send</span>
+        </button>
       </div>
     </div>
   </div>
@@ -229,26 +451,49 @@
     const socket = io();
     const messagesContainer = document.getElementById('messages');
     const statusElement = document.getElementById('status');
+    const statusIcon = document.getElementById('statusIcon');
     const usernameInput = document.getElementById('usernameInput');
     const messageInput = document.getElementById('messageInput');
     const usernameField = document.getElementById('username');
     const messageField = document.getElementById('message');
     const sendBtn = document.getElementById('sendBtn');
+    const themeToggle = document.getElementById('themeToggle');
 
     let isConnected = false;
     let currentUsername = '';
+    let darkMode = false;
+
+    // Автоматический фокус на поле имени при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+      usernameField.focus();
+    });
+
+    // Автоматическое изменение высоты textarea
+    function autoResizeTextarea(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 160) + 'px';
+    }
+    messageField.addEventListener('input', function () {
+      autoResizeTextarea(this);
+    });
 
     // Обработка подключения
     socket.on('connect', () => {
       isConnected = true;
-      statusElement.textContent = 'Подключено';
+      statusElement.textContent = '';
       statusElement.className = 'status connected';
+      statusIcon.textContent = 'check_circle';
+      statusElement.appendChild(statusIcon);
+      statusElement.append('Подключено');
     });
 
     socket.on('disconnect', () => {
       isConnected = false;
-      statusElement.textContent = 'Отключено';
+      statusElement.textContent = '';
       statusElement.className = 'status disconnected';
+      statusIcon.textContent = 'error';
+      statusElement.appendChild(statusIcon);
+      statusElement.append('Отключено');
     });
 
     // Обработка ошибок
@@ -261,6 +506,7 @@
       const username = usernameField.value.trim();
       if (!username) {
         alert('Пожалуйста, введите ваше имя');
+        usernameField.focus();
         return;
       }
 
@@ -269,6 +515,12 @@
 
       usernameInput.style.display = 'none';
       messageInput.style.display = 'flex';
+
+      // Фокус на поле ввода сообщения
+      setTimeout(() => {
+        messageField.focus();
+        autoResizeTextarea(messageField);
+      }, 100);
 
       // Загружаем историю сообщений
       socket.emit('getHistory');
@@ -281,12 +533,24 @@
 
       socket.emit('message', { text: message });
       messageField.value = '';
+      autoResizeTextarea(messageField);
+      messageField.focus();
     }
 
-    // Обработка нажатия Enter
-    messageField.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+    // Обработка нажатия Enter (отправка по Ctrl+Enter или Cmd+Enter, перенос строки по Enter)
+    messageField.addEventListener('keydown', (e) => {
+      if ((e.key === 'Enter' || e.keyCode === 13) && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
         sendMessage();
+      }
+    });
+
+    // Для совместимости: отправка по Enter, если не зажат Shift/Ctrl/Meta (можно поменять на нужное поведение)
+    messageField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        // По умолчанию Enter делает перенос строки, но если хотите отправлять по Enter без модификаторов, раскомментируйте:
+        // e.preventDefault();
+        // sendMessage();
       }
     });
 
@@ -310,7 +574,7 @@
 
     // Пользователь присоединился
     socket.on('userJoined', (data) => {
-      addSystemMessage(`${data.username} присоединился к чату`);
+      addSystemMessage(`<span class="material-icons" style="font-size:18px;vertical-align:middle;color:#667eea;">person_add</span> <b>${escapeHtml(data.username)}</b> присоединился к чату`);
     });
 
     // Добавление сообщения в чат
@@ -324,9 +588,13 @@
       });
 
       messageDiv.innerHTML = `
-                <div class="message-info">${data.username} • ${time}</div>
-                <div class="message-text">${escapeHtml(data.text)}</div>
-            `;
+        <div class="message-info">
+          <span class="material-icons" style="font-size:16px;vertical-align:middle;${isOwn ? 'color:#fff;opacity:0.7;' : 'color:#667eea;opacity:0.7;'}">account_circle</span>
+          <span>${escapeHtml(data.username)}</span>
+          <span style="font-size:13px;opacity:0.7;">• ${time}</span>
+        </div>
+        <div class="message-text">${escapeHtml(data.text)}</div>
+      `;
 
       messagesContainer.appendChild(messageDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -336,7 +604,7 @@
     function addSystemMessage(text) {
       const messageDiv = document.createElement('div');
       messageDiv.className = 'typing-indicator';
-      messageDiv.textContent = text;
+      messageDiv.innerHTML = `<span class="material-icons" style="font-size:18px;vertical-align:middle;color:#667eea;">info</span> ${text}`;
       messagesContainer.appendChild(messageDiv);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
@@ -347,6 +615,41 @@
       div.textContent = text;
       return div.innerHTML;
     }
+
+    // Автоматическая прокрутка вниз при появлении клавиатуры на мобильных
+    window.addEventListener('resize', () => {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    // Переключение темы (светлая/тёмная)
+    themeToggle.addEventListener('click', () => {
+      darkMode = !darkMode;
+      if (darkMode) {
+        document.body.style.background = "#181a20";
+        document.querySelector('.chat-container').style.background = "#23263a";
+        document.documentElement.style.setProperty('--main-bg', '#23263a');
+        document.documentElement.style.setProperty('--container-bg', '#23263a');
+        // document.documentElement.style.setProperty('--other-msg-bg', '#1a1d29');
+        document.documentElement.style.setProperty('--other-msg-text', '#f8f9fa');
+        document.documentElement.style.setProperty('--accent', '#ffd600');
+        document.documentElement.style.setProperty('--shadow', '0 8px 32px rgba(0,0,0,0.18)');
+        document.documentElement.style.setProperty('--system-msg-bg', '#1a1d29');
+        document.documentElement.style.setProperty('--system-msg-text', '#ffd600');
+        themeToggle.textContent = 'light_mode';
+      } else {
+        document.body.style.background = "";
+        document.querySelector('.chat-container').style.background = "";
+        document.documentElement.style.setProperty('--main-bg', '#f4f6fb');
+        document.documentElement.style.setProperty('--container-bg', '#fff');
+        document.documentElement.style.setProperty('--other-msg-bg', '#f7f8fa');
+        document.documentElement.style.setProperty('--other-msg-text', '#222');
+        document.documentElement.style.setProperty('--accent', '#667eea');
+        document.documentElement.style.setProperty('--shadow', '0 8px 32px rgba(76, 68, 182, 0.13)');
+        document.documentElement.style.setProperty('--system-msg-bg', '#f0fff4');
+        document.documentElement.style.setProperty('--system-msg-text', '#276749');
+        themeToggle.textContent = 'dark_mode';
+      }
+    });
   </script>
 </body>
 
